@@ -8,24 +8,25 @@ struct ArNode {
 };
 
 template<typename T>
-struct MyArray {
+class MyArray {
+ public:
     ArNode<T>* data;
     int size;
-    int capacity;
+    int capacity; 
 
     MyArray() : data(new ArNode<T>[10]), size(0), capacity(10) {}
 
 
     T& operator[](int index) {
         if (index < 0 || index >= capacity) {
-            throw std::out_of_range("Index out of array bounds");
+            throw out_of_range("Index out of array bounds");
         }
         return data[index].key;
     }
 
     const T& operator[](int index) const {
         if (index < 0 || index >= capacity) {
-            throw std::out_of_range("Index out of array bounds");
+            throw out_of_range("Index out of array bounds");
         }
         return data[index].key;
     }
@@ -34,7 +35,7 @@ struct MyArray {
         capacity = other.capacity;
         size = other.size;
         data = new ArNode<T>[capacity];
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < capacity; i++) {
             data[i] = other.data[i];
         }
     }
@@ -45,7 +46,7 @@ struct MyArray {
         capacity = other.capacity;
         size = other.size;
         data = new ArNode<T>[capacity];
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < capacity; i++) {
             data[i] = other.data[i];
         }
         return *this;
@@ -90,15 +91,18 @@ struct MyArray {
             resize();
         }
         data[size].key = key;
-        if (data[size].key != T()) {
-            size++;
-        }
+        size++;
+
     }
 
 
     void MPUSH_index(int index, T key) {     // O(N)
-        if (index >= capacity || index < 0) {
+        if (index > capacity || index < 0) {
             throw invalid_argument("Array index out od bounds");
+        }
+
+        if (size >= capacity) {
+            resize();
         }
 
         for (int i = capacity - 1; i >= index; i--) {
@@ -140,7 +144,90 @@ struct MyArray {
         cout << endl;
     }
 
-    int MSIZE() const {
+    int msize() const {
         return size;
+    }
+
+    void saveText(const string& filename) const {
+        ofstream file(filename);
+        if (!file.is_open()) {
+            throw runtime_error("Could not open file for writing: " + filename);
+        }
+
+        file << size << " " << capacity << "\n";
+
+        for (int i = 0; i < capacity; ++i) {
+            file << data[i].key << " ";
+        }
+        
+        file.close();
+    }
+
+    void loadText(const string& filename) {
+        ifstream file(filename);
+        if (!file.is_open()) {
+            throw runtime_error("Could not open file for reading: " + filename);
+        }
+
+        int newSize, newCapacity;
+        if (!(file >> newSize >> newCapacity)) {
+            throw runtime_error("Error reading header info");
+        }
+
+        // Очищаем текущие данные
+        delete[] data;
+
+        size = newSize;
+        capacity = newCapacity;
+        data = new ArNode<T>[capacity];
+
+        for (int i = 0; i < capacity; ++i) {
+            if (!(file >> data[i].key)) {
+                data[i].key = T(); 
+            }
+        }
+
+        file.close();
+    }
+
+ 
+    void saveBinary(const string& filename) const {
+        ofstream file(filename, ios::binary);
+        if (!file.is_open()) {
+            throw runtime_error("Could not open file for writing: " + filename);
+        }
+
+        // Записываем size и capacity
+        file.write(reinterpret_cast<const char*>(&size), sizeof(size));
+        file.write(reinterpret_cast<const char*>(&capacity), sizeof(capacity));
+
+        // Записываем массив данных
+        for (int i = 0; i < capacity; ++i) {
+            file.write(reinterpret_cast<const char*>(&data[i].key), sizeof(T));
+        }
+
+        file.close();
+    }
+
+    void loadBinary(const string& filename) {
+        ifstream file(filename, ios::binary);
+        if (!file.is_open()) {
+            throw runtime_error("Could not open file for reading: " + filename);
+        }
+
+        int newSize, newCapacity;
+        file.read(reinterpret_cast<char*>(&newSize), sizeof(newSize));
+        file.read(reinterpret_cast<char*>(&newCapacity), sizeof(newCapacity));
+
+        delete[] data;
+        size = newSize;
+        capacity = newCapacity;
+        data = new ArNode<T>[capacity];
+
+        for (int i = 0; i < capacity; ++i) {
+            file.read(reinterpret_cast<char*>(&data[i].key), sizeof(T));
+        }
+
+        file.close();
     }
 };

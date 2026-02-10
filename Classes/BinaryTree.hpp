@@ -23,6 +23,74 @@ class FBTree{
     TreeNode<T>* root;
     int size = 0;
 
+    // Вспомогательные методы для сериализации
+    void serialize_text_helper(const TreeNode<T>* node, ofstream& out) const {
+        if (node == nullptr) {
+            out << "# ";
+            return;
+        }
+        out << node->key << " ";
+        serialize_text_helper(node->left, out);
+        serialize_text_helper(node->right, out);
+    }
+
+    TreeNode<T>* deserialize_text_helper(istringstream& iss) {
+        string value;
+        if (!(iss >> value) || value == "#") {
+            return nullptr;
+        }
+
+        T key;
+        istringstream converter(value);
+        converter >> key;
+
+        TreeNode<T>* node = new TreeNode<T>(key, nullptr, nullptr);
+        node->left = deserialize_text_helper(iss);
+        node->right = deserialize_text_helper(iss);
+        
+        return node;
+    }
+
+    void serialize_binary_helper(const TreeNode<T>* node, ofstream& out) const {
+        if (node == nullptr) {
+            bool is_null = true;
+            out.write(reinterpret_cast<const char*>(&is_null), sizeof(bool));
+            return;
+        }
+
+        bool is_null = false;
+        out.write(reinterpret_cast<const char*>(&is_null), sizeof(bool));
+        out.write(reinterpret_cast<const char*>(&node->key), sizeof(T));
+        
+        serialize_binary_helper(node->left, out);
+        serialize_binary_helper(node->right, out);
+    }
+
+    TreeNode<T>* deserialize_binary_helper(ifstream& in) {
+        bool is_null;
+        in.read(reinterpret_cast<char*>(&is_null), sizeof(bool));
+        
+        if (is_null) {
+            return nullptr;
+        }
+
+        T key;
+        in.read(reinterpret_cast<char*>(&key), sizeof(T));
+        
+        TreeNode<T>* node = new TreeNode<T>(key, nullptr, nullptr);
+        node->left = deserialize_binary_helper(in);
+        node->right = deserialize_binary_helper(in);
+        
+        return node;
+    }
+
+    int count_nodes(const TreeNode<T>* node) const {
+        if (node == nullptr) {
+            return 0;
+        }
+        return 1 + count_nodes(node->left) + count_nodes(node->right);
+    }
+
  public:
     explicit FBTree() : root(nullptr) {}
 
@@ -193,40 +261,71 @@ class FBTree{
         PRINT(root->right, prefix + (isLeft ? "│   " : "    "), false);
     }
 
-    void pre_order_write_file(const TreeNode<T>* root, ofstream& file) const {
-        if (root != nullptr) {
-            file << root -> key << ' ';
-            pre_order_write_file(root -> left, file);
-            pre_order_write_file(root -> right, file);
+
+     // Текстовая сериализация
+    void SERIALIZE_TEXT(const string& filename) const {
+        ofstream out(filename);
+        if (!out.is_open()) {
+            throw runtime_error("Cannot open file for writing: " + filename);
         }
+        
+        serialize_text_helper(root, out);
+        out.close();
     }
 
-    // запись дерева в файл
-    void tree_write_file(const string& filename) const {
-        ofstream file(filename);
-        if (file.is_open()) {
-            file << size << ' ';
-            pre_order_write_file(root, file);
+    // Текстовая десериализация
+    void DESERIALIZE_TEXT(const string& filename) {
+        ifstream in(filename);
+        if (!in.is_open()) {
+            throw runtime_error("Cannot open file for reading: " + filename);
         }
-        file.close();
-    }
 
-
-    void tree_read_file(const string& filename) {   // чтение из файла
-        destroy_tree();
-        ifstream file(filename);
-        if (is_file_empty(filename)) {
-            return;
-        }
+        destroy_tree(root);
         root = nullptr;
+        size = 0;
 
-        int listsize;
-        file >> listsize;
-        for (int i = 0; i < listsize; i++) {
-            T data;
-            file >> data;
-            TINSERT(data);
+        stringstream buffer;
+        buffer << in.rdbuf();
+        string content = buffer.str();
+        istringstream iss(content);
+        
+        root = deserialize_text_helper(iss);
+        size = count_nodes(root);
+        
+        in.close();
+    }
+
+    // Бинарная сериализация
+    void SERIALIZE_BINARY(const string& filename) const {
+        ofstream out(filename, ios::binary);
+        if (!out.is_open()) {
+            throw runtime_error("Cannot open file for writing: " + filename);
         }
-        file.close();
+        
+
+        out.write(reinterpret_cast<const char*>(&size), sizeof(int));
+        
+
+        serialize_binary_helper(root, out);
+        out.close();
+    }
+
+    // Бинарная десериализация
+    void DESERIALIZE_BINARY(const string& filename) {
+        ifstream in(filename, ios::binary);
+        if (!in.is_open()) {
+            throw runtime_error("Cannot open file for reading: " + filename);
+        }
+
+        destroy_tree(root);
+        root = nullptr;
+        
+
+        in.read(reinterpret_cast<char*>(&size), sizeof(int));
+        
+
+        root = deserialize_binary_helper(in);
+        
+        in.close();
     }
 };

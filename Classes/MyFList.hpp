@@ -1,6 +1,8 @@
 #pragma once
 
 #include "List_header.hpp"
+#include <fstream> 
+
 
 template<typename T>
 struct FLNode {
@@ -17,19 +19,19 @@ class ForwardList {
     int size = 0;
 
  public:
-    explicit ForwardList() : head(nullptr){}
+    explicit ForwardList() : head(nullptr) {}
 
     ForwardList(const ForwardList& other) : head(nullptr), size(0) {
         FLNode<T>* curr = other.head;
         while (curr) {
-            FPUSH_back(*this, curr->key);
+            FPUSH_back(curr -> key);
             curr = curr->next;
         }
     }
 
     ForwardList& operator=(const ForwardList& other) {
         if (this == &other) return *this;  // защита от самоприсваивания
-        destroy_list(head);
+        destroy_list();
         head = nullptr;
         size = 0;
         FLNode<T>* curr = other.head;
@@ -54,7 +56,7 @@ class ForwardList {
     }
 
     ~ForwardList() {
-        destroy_list(head);
+        destroy_list();
     }
 
     FLNode<T>* FGET(T key) const {        // O(N)
@@ -77,7 +79,7 @@ class ForwardList {
     }
 
     T FGET_key(int index) const {
-        try{
+        try {
             return FGET_index(index) -> key;
         } catch(const exception& error) {
             cerr << error.what() << endl;
@@ -202,6 +204,10 @@ class ForwardList {
         }
     }
 
+    int flsize() const {
+        return size;
+    }
+
     void PRINT() const {
         FLNode<T>* ptr = head;
         while (ptr) {
@@ -209,5 +215,68 @@ class ForwardList {
             ptr = ptr -> next;
         }
         cout << endl;
+    }
+
+    void serialize_text(const string& filename) const {
+        ofstream file(filename);
+        if (!file.is_open()) {
+            throw runtime_error("Error: Could not open file for text serialization");
+        }
+
+        FLNode<T>* ptr = head;
+        while (ptr) {
+            file << ptr->key << " ";
+            ptr = ptr->next;
+        }
+        file.close();
+    }
+
+    // Загрузка из текстового файла.
+    void deserialize_text(const string& filename) {
+        ifstream file(filename);
+        if (!file.is_open()) {
+            throw runtime_error("Error: Could not open file for text deserialization");
+        }
+
+        destroy_list();
+
+        T val;
+
+        while (file >> val) {
+            FPUSH_back(val);
+        }
+        file.close();
+    }
+
+
+    // Сохранение в бинарный файл.
+    void serialize_binary(const string& filename) const {
+        ofstream file(filename, ios::binary);
+        if (!file.is_open()) {
+            throw runtime_error("Error: Could not open file for binary serialization");
+        }
+
+        FLNode<T>* ptr = head;
+        while (ptr) {
+            file.write(reinterpret_cast<const char*>(&ptr->key), sizeof(T));
+            ptr = ptr->next;
+        }
+        file.close();
+    }
+
+    // Загрузка из бинарного файла.
+    void deserialize_binary(const string& filename) {
+        ifstream file(filename, ios::binary);
+        if (!file.is_open()) {
+            throw runtime_error("Error: Could not open file for binary deserialization");
+        }
+
+        destroy_list();
+
+        T val;
+        while (file.read(reinterpret_cast<char*>(&val), sizeof(T))) {
+            FPUSH_back(val);
+        }
+        file.close();
     }
 };

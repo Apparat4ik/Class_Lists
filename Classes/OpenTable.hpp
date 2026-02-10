@@ -9,7 +9,7 @@ struct OTNode{
     Key key;
     Value value;
     OTNode() = default;
-    OTNode(Key k, Value v) : key(k), value(v){}
+    OTNode(Key k, Value v) : key(k), value(v) {}
 };
 
 
@@ -166,6 +166,141 @@ class OpenTable{
             }
         }
         cout << endl;
+    }
+
+    // Сохранение в текстовый файл
+    bool saveText(const string& filename) const {
+        std::ofstream out(filename);
+        if (!out.is_open()) {
+            return false;
+        }
+
+        // Записываем метаданные
+        out << countItems << '\n';
+        out << buckets.capacity << '\n';
+        out << bucketsThersSmtng << '\n';
+
+        // Записываем пары ключ-значение
+        for (int i = 0; i < buckets.capacity; i++) {
+            if (buckets.data[i].key.key != Key()) {
+                out << buckets.data[i].key.key << '\n';
+                out << buckets.data[i].key.value << '\n';
+            }
+        }
+
+        out.close();
+        return true;
+    }
+
+    // Загрузка из текстового файла
+    bool loadText(const string& filename) {
+        std::ifstream in(filename);
+        if (!in.is_open()) {
+            return false;
+        }
+
+        size_t newCountItems, newCapacity, newBucketsThersSmtng;
+        in >> newCountItems;
+        in >> newCapacity;
+        in >> newBucketsThersSmtng;
+        in.ignore(); // пропускаем перевод строки
+
+        // Пересоздаем таблицу с новой емкостью
+        buckets = MyArray<OTNode<Key, Value>>(newCapacity);
+        countItems = 0;
+        bucketsThersSmtng = 0;
+
+        // Читаем пары ключ-значение и вставляем
+        for (size_t i = 0; i < newCountItems; i++) {
+            Key key;
+            Value val;
+            in >> key;
+            in >> val;
+            in.ignore(); 
+            insert(key, val);
+        }
+
+        in.close();
+        return true;
+    }
+
+
+    // Вспомогательные функции для записи в бинарный файл
+    template<typename T>
+    static void writeBinary(std::ofstream& out, const T& value) {
+        out.write(reinterpret_cast<const char*>(&value), sizeof(T));
+    }
+
+    static void writeBinary(std::ofstream& out, const string& str) {
+        size_t length = str.size();
+        out.write(reinterpret_cast<const char*>(&length), sizeof(length));
+        out.write(str.c_str(), length);
+    }
+
+    // Вспомогательные функции для чтения из бинарного файла
+    template<typename T>
+    static void readBinary(std::ifstream& in, T& value) {
+        in.read(reinterpret_cast<char*>(&value), sizeof(T));
+    }
+
+    static void readBinary(std::ifstream& in, string& str) {
+        size_t length;
+        in.read(reinterpret_cast<char*>(&length), sizeof(length));
+        str.resize(length);
+        in.read(&str[0], length);
+    }
+
+    // Сохранение в бинарный файл
+    bool saveBinary(const string& filename) const {
+        std::ofstream out(filename, std::ios::binary);
+        if (!out.is_open()) {
+            return false;
+        }
+        writeBinary(out, countItems);
+        writeBinary(out, buckets.capacity);
+        writeBinary(out, bucketsThersSmtng);
+
+        // Записываем пары ключ-значение
+        for (int i = 0; i < buckets.capacity; i++) {
+            if (buckets.data[i].key.key != Key()) {
+                writeBinary(out, buckets.data[i].key.key);
+                writeBinary(out, buckets.data[i].key.value);
+            }
+        }
+
+        out.close();
+        return true;
+    }
+
+    // Загрузка из бинарного файла
+    bool loadBinary(const string& filename) {
+        std::ifstream in(filename, std::ios::binary);
+        if (!in.is_open()) {
+            return false;
+        }
+
+        size_t newCountItems, newBucketsThersSmtng;
+        int newCapacity;
+        readBinary(in, newCountItems);
+        readBinary(in, newCapacity);
+        readBinary(in, newBucketsThersSmtng);
+
+        // Пересоздаем таблицу с новой емкостью
+        buckets = MyArray<OTNode<Key, Value>>(newCapacity);
+        countItems = 0;
+        bucketsThersSmtng = 0;
+
+        // Читаем пары ключ-значение и вставляем
+        for (size_t i = 0; i < newCountItems; i++) {
+            Key key;
+            Value val;
+            readBinary(in, key);
+            readBinary(in, val);
+            insert(key, val);
+        }
+
+        in.close();
+        return true;
     }
 };
 

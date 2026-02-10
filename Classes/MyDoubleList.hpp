@@ -20,9 +20,6 @@ class DoubleList {
     DLNode<T>* tail;
     int size = 0;
 
- public:
-    DoubleList() : head(nullptr), tail(head) {}
-
     void destroy_list() {
         if (size == 0) {
             return;
@@ -34,6 +31,30 @@ class DoubleList {
             current = next;
         }
         size = 0;
+    }
+
+ public:
+    DoubleList() : head(nullptr), tail(head) {}
+
+    DoubleList(const DoubleList& other) : head(nullptr), size(0) {
+        DLNode<T>* curr = other.head;
+        while (curr) {
+            LPUSH_back(curr -> key);
+            curr = curr -> next;
+        }
+    }
+
+    DoubleList& operator=(const DoubleList& other) {
+        if (this == &other) return *this;  // защита от самоприсваивания
+        destroy_list();
+        head = nullptr;
+        size = 0;
+        DLNode<T>* curr = other.head;
+        while (curr) {
+            LPUSH_back(curr->key);
+            curr = curr -> next;
+        }
+        return *this;
     }
 
     ~DoubleList() {
@@ -73,7 +94,8 @@ class DoubleList {
             for (int i = 0; i < index; i++) {
                 ptr = ptr -> next;
             }
-        } else {
+        }
+        if (size == 0 || index >= size) {
             throw out_of_range("double list inex out of bouds");
         }
         return ptr;
@@ -89,6 +111,12 @@ class DoubleList {
             DLNode<T>* newNode = new DLNode<T>;
             newNode -> key = key;
             newNode -> next = ptr -> next;
+            if (ptr == tail) {
+                ptr -> next = newNode;
+                newNode -> prev = ptr;
+                tail = newNode;
+                return;
+            }
             ptr -> next -> prev = newNode;
             ptr -> next = newNode;
             newNode -> prev = ptr;
@@ -274,36 +302,91 @@ class DoubleList {
         }
         cout << endl;
     }
-    // запись списка в файл
-    void dlist_write_file(const string& filename) const {
+    
+    // ТЕКСТОВАЯ СЕРИАЛИЗАЦИЯ
+    void serialize_text(const string& filename) const {
         ofstream file(filename);
-        if (file.is_open()) {
-            file << size << ' ';
-            DLNode<T>* current = head;
-            while (current) {
-                file << current -> key << ' ';
-                current = current -> next;
-            }
+        if (!file.is_open()) {
+            throw runtime_error("Cannot open file for writing: " + filename);
         }
+
+        file << size << endl;
+        DLNode<T>* current = head;
+        while (current != nullptr) {
+            file << current->key << endl;
+            current = current->next;
+        }
+
         file.close();
     }
 
-    // чтение из файла
-    void dlist_read_file(const string& filename){
-        destroy_list();
+    // ТЕКСТОВАЯ ДЕСЕРИАЛИЗАЦИЯ
+    void deserialize_text(const string& filename) {
         ifstream file(filename);
-        if (is_file_empty(filename)) {
-            return;
+        if (!file.is_open()) {
+            throw runtime_error("Cannot open file for reading: " + filename);
         }
-        head = nullptr;
 
-        int listsize;
-        file >> listsize;
-        for (int i = 0; i < listsize; i++) {
-            T data;
-            file >> data;
-            LPUSH_back(data);
+        destroy_list();
+        head = nullptr;
+        tail = nullptr;
+        size = 0;
+
+        int count;
+        file >> count;
+
+        T value;
+        for (int i = 0; i < count; i++) {
+            file >> value;
+            LPUSH_back(value);
         }
+
+        file.close();
+    }
+
+    // БИНАРНАЯ СЕРИАЛИЗАЦИЯ
+    void serialize_binary(const string& filename) const {
+        ofstream file(filename, ios::binary);
+        if (!file.is_open()) {
+            throw runtime_error("Cannot open file for binary writing: " + filename);
+        }
+
+        // Записываем размер списка
+        file.write(reinterpret_cast<const char*>(&size), sizeof(size));
+
+        // Записываем все элементы
+        DLNode<T>* current = head;
+        while (current != nullptr) {
+            file.write(reinterpret_cast<const char*>(&current->key), sizeof(T));
+            current = current->next;
+        }
+
+        file.close();
+    }
+
+    // БИНАРНАЯ ДЕСЕРИАЛИЗАЦИЯ
+    void deserialize_binary(const string& filename) {
+        ifstream file(filename, ios::binary);
+        if (!file.is_open()) {
+            throw runtime_error("Cannot open file for binary reading: " + filename);
+        }
+
+        destroy_list();
+        head = nullptr;
+        tail = nullptr;
+        size = 0;
+
+        // Читаем размер списка
+        int count;
+        file.read(reinterpret_cast<char*>(&count), sizeof(count));
+
+        // Читаем все элементы
+        T value;
+        for (int i = 0; i < count; i++) {
+            file.read(reinterpret_cast<char*>(&value), sizeof(T));
+            LPUSH_back(value);
+        }
+
         file.close();
     }
 };
