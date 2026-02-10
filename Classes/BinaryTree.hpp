@@ -2,6 +2,7 @@
 
 #include "List_header.hpp"
 #include "MyQueue.hpp"
+#include <sstream>
 
 const string branch_right = "|--- ";
 const string branch_left = "|__ ";
