@@ -1,0 +1,353 @@
+@startuml
+
+
+
+
+
+/' Objects '/
+
+class DoubleList <template<typename T>> {
+	+DoubleList()
+	+DoubleList(const DoubleList& other)
+	+~DoubleList()
+	+LGET(T key) : DLNode<T>*
+	+LGET_index(int index) : DLNode<T>*
+	-head : DLNode<T>*
+	-tail : DLNode<T>*
+	+operator=(const DoubleList& other) : DoubleList&
+	+LGET_key(int index) : T
+	-size : int
+	+LDEL_back() : void
+	+LDEL_front() : void
+	+LDEL_next(int index) : void
+	+LDEL_prev(int index) : void
+	+LDEL_val(T key) : void
+	+LPUSH_back(T key) : void
+	+LPUSH_front(T key) : void
+	+LPUSH_next(int index, T key) : void
+	+LPUSH_prev(int index, T key) : void
+	+PRINT() : void {query}
+	+PRINT_reverse_dl() : void {query}
+	+deserialize_binary(const string& filename) : void
+	+deserialize_text(const string& filename) : void
+	-destroy_list() : void
+	+serialize_binary(const string& filename) : void {query}
+	+serialize_text(const string& filename) : void {query}
+	+size_check() : void
+}
+
+
+class FBTree <template<typename T>> {
+	+FBTree()
+	+~FBTree()
+	-deserialize_binary_helper(ifstream& in) : TreeNode<T>*
+	-deserialize_text_helper(istringstream& iss) : TreeNode<T>*
+	-root : TreeNode<T>*
+	+TISFULL(TreeNode<T>* current) : bool {query}
+	+TISMEMBER(const FBTree<T>& tree, T key) : bool {query}
+	+preorder_search(const TreeNode<T>* root, T key) : bool {query}
+	-count_nodes(const TreeNode<T>* node) : int {query}
+	-size : int
+	+DESERIALIZE_BINARY(const string& filename) : void
+	+DESERIALIZE_TEXT(const string& filename) : void
+	+PRINT(TreeNode<T>* root, const string& prefix, bool isLeft) : void {query}
+	+PRINT_BFS() : void {query}
+	+PRINT_inorder() : void {query}
+	+PRINT_postorder() : void {query}
+	+PRINT_preorder() : void {query}
+	+SERIALIZE_BINARY(const string& filename) : void {query}
+	+SERIALIZE_TEXT(const string& filename) : void {query}
+	+TINSERT(T key) : void
+	+destroy_tree(TreeNode<T>* tree_node) : void
+	+in_order(const TreeNode<T>* root) : void {query}
+	+post_order(const TreeNode<T>* root) : void {query}
+	+pre_order(const TreeNode<T>* root) : void {query}
+	+print_tree_recursive(TreeNode<T>* node, const string& prefix, bool isLeft) : void {query}
+	-serialize_binary_helper(const TreeNode<T>* node, ofstream& out) : void {query}
+	-serialize_text_helper(const TreeNode<T>* node, ofstream& out) : void {query}
+}
+
+
+class ForwardList <template<typename T>> {
+	+ForwardList()
+	+ForwardList(const ForwardList& other)
+	+~ForwardList()
+	+FGET(T key) : FLNode<T>* {query}
+	+FGET_index(int index) : FLNode<T>* {query}
+	-head : FLNode<T>*
+	+operator=(const ForwardList& other) : ForwardList&
+	+FGET_key(int index) : T {query}
+	+flsize() : int {query}
+	-size : int
+	+FDEL_back() : void
+	+FDEL_front() : void
+	+FDEL_next(int index) : void
+	+FDEL_prev(int index) : void
+	+FDEL_val(T key) : void
+	+FPUSH_back(T key) : void
+	+FPUSH_front(T key) : void
+	+FPUSH_next(int index, T key) : void
+	+FPUSH_prev(int index, T key) : void
+	+PRINT() : void {query}
+	+deserialize_binary(const string& filename) : void
+	+deserialize_text(const string& filename) : void
+	+destroy_list() : void
+	+serialize_binary(const string& filename) : void {query}
+	+serialize_text(const string& filename) : void {query}
+}
+
+
+class MyArray <template<typename T>> {
+	+MyArray()
+	+MyArray(const MyArray& other)
+	+MyArray(int init_cap)
+	+~MyArray()
+	+data : ArNode<T>*
+	+operator=(const MyArray& other) : MyArray&
+	+MGET(int index) : T {query}
+	+operator[](int index) : T&
+	+operator[](int index) : T& {query}
+	+capacity : int
+	+msize() : int {query}
+	+size : int
+	+MDEL(int index) : void
+	+MPUSH_back(T key) : void
+	+MPUSH_index(int index, T key) : void
+	+MSWAP(int index, T swapkey) : void
+	+PRINT() : void {query}
+	+loadBinary(const string& filename) : void
+	+loadText(const string& filename) : void
+	+resize() : void
+	+saveBinary(const string& filename) : void {query}
+	+saveText(const string& filename) : void {query}
+}
+
+
+class MyQueue <template<typename T>> {
+	+MyQueue()
+	+MyQueue(const MyQueue& other)
+	+~MyQueue()
+	+operator=(const MyQueue& other) : MyQueue&
+	-head : QNode<T>*
+	-tail : QNode<T>*
+	+get_head() : T {query}
+	+get_tail() : T
+	+QEMPTY() : bool {query}
+	-size : int
+	+qsize() : size_t {query}
+	+PRINT() : void {query}
+	+QPOP() : void
+	+QPUSH(T key) : void
+	+deserialize_binary(const string& filename) : void
+	+deserialize_text(const string& filename) : void
+	-destroy_queue() : void
+	+serialize_binary(const string& filename) : void {query}
+	+serialize_text(const string& filename) : void {query}
+}
+
+
+class MyStack <template<typename T>> {
+	+MyStack()
+	+MyStack(initializer_list<T> list)
+	+MyStack(const MyStack& other)
+	+~MyStack()
+	+operator=(const MyStack& other) : MyStack&
+	-head : StNode<T>*
+	+SGET_head() : auto {query}
+	+SPOP() : auto
+	-size : size_t
+	+stsize() : size_t
+	+PRINT() : void {query}
+	+SPUSH(T key) : void
+	-copy_from(const MyStack& other) : void
+	+deserialize_binary(const string& filename) : void
+	+deserialize_text(const string& filename) : void
+	-destroy_stack() : void
+	+serialize_binary(const string& filename) : void {query}
+	+serialize_text(const string& filename) : void {query}
+}
+
+
+class OpenTable <template<typename Key, typename Value>> {
+	+OpenTable(int initcap)
+	+OpenTable()
+	+get_key(int i) : Key {query}
+	-buckets : MyArray<OTNode<Key, Value>>
+	+get_value(Key k) : Value {query}
+	+empty() : bool {query}
+	+find(const Key& key) : bool {query}
+	+loadBinary(const string& filename) : bool
+	+loadText(const string& filename) : bool
+	+saveBinary(const string& filename) : bool {query}
+	+saveText(const string& filename) : bool {query}
+	+get_cap() : int {query}
+	-Hash(int key) : size_t {query}
+	-Hash(const string& key) : size_t {query}
+	-bucketsThersSmtng : size_t
+	-countItems : size_t
+	-get_bucket_index(const Key& key) : size_t {query}
+	+size() : size_t {query}
+	+SPRINT() : void
+	+erase(const Key& key) : void
+	+insert(const Key& key, const Value& val) : void
+	+{static} readBinary(std::ifstream& in, T& value) : void
+	+{static} readBinary(std::ifstream& in, string& str) : void
+	-rehash() : void
+	+{static} writeBinary(std::ofstream& out, const T& value) : void
+	+{static} writeBinary(std::ofstream& out, const string& str) : void
+}
+
+
+class TableHash <template<typename Key, typename Value>> {
+	+TableHash(int initcap)
+	+TableHash()
+	-buckets : MyArray<ForwardList<HashNode<Key, Value>>>
+	+GET(const Key& key) : Value
+	+HT_AT(const Key& key) : bool {query}
+	+empty() : bool {query}
+	-loadFactor : const double
+	-Hash(int key) : size_t {query}
+	-Hash(const string& key) : size_t {query}
+	-bucketsThersSmtng : size_t
+	-countItems : size_t
+	-get_bucket_index(const Key& key) : size_t {query}
+	+size() : size_t {query}
+	+Clear() : void
+	+HTADD(const Key& key, const Value& value) : void
+	+HTDEL(const Key& key) : void
+	+LoadBinary(const string& filename) : void
+	+LoadText(const string& filename) : void
+	+PRINT() : void
+	+SaveBinary(const string& filename) : void
+	+SaveText(const string& filename) : void
+	-bin_read(ifstream& in, U& val) : void
+	-bin_read(ifstream& in, string& val) : void
+	-bin_write(ofstream& out, const U& val) : void
+	-bin_write(ofstream& out, const string& val) : void
+	-rehash() : void
+}
+
+
+class ArNode <template<typename T>> {
+	+key : T
+}
+
+
+class DLNode <template<typename T>> {
+	+DLNode()
+	+DLNode(T value, DLNode* prevptr, DLNode* nextptr)
+	+next : DLNode*
+	+prev : DLNode*
+	+key : T
+}
+
+
+class FLNode <template<typename T>> {
+	+FLNode()
+	+FLNode(T value, FLNode* ptr)
+	+next : FLNode*
+	+key : T
+}
+
+
+class HashNode <template<typename Key, typename Value>> {
+	+HashNode(Key k, Value v)
+	+HashNode()
+	+key : Key
+	+value : Value
+	+operator!=(const HashNode& other) : bool {query}
+	+operator==(const HashNode& other) : bool {query}
+}
+
+
+class OTNode <template<typename Key, typename Value>> {
+	+OTNode()
+	+OTNode(Key k, Value v)
+	+key : Key
+	+value : Value
+}
+
+
+class QNode <template<typename T>> {
+	+QNode()
+	+QNode(T value, QNode* ptr)
+	+next : QNode<T>*
+	+key : T
+}
+
+
+class StNode <template<typename T>> {
+	+StNode()
+	+StNode(T value, StNode* ptr)
+	+next : StNode*
+	+key : T
+}
+
+
+class TreeNode <template<typename T>> {
+	+TreeNode()
+	+TreeNode(T value, TreeNode* leftptr, TreeNode* rightptr)
+	+key : T
+	+left : TreeNode*
+	+right : TreeNode*
+}
+
+
+
+
+
+/' Inheritance relationships '/
+
+
+
+
+/' Aggregation relationships '/
+
+DLNode "2" o-- DLNode
+
+
+DoubleList "2" *-- DLNode
+
+
+FBTree *-- TreeNode
+
+
+FLNode o-- FLNode
+
+
+ForwardList *-- FLNode
+
+
+MyArray *-- ArNode
+
+
+MyQueue "2" *-- QNode
+
+
+MyStack *-- StNode
+
+
+OpenTable *-- MyArray
+
+
+QNode *-- QNode
+
+
+StNode o-- StNode
+
+
+TableHash *-- MyArray
+
+
+TreeNode "2" o-- TreeNode
+
+
+
+
+
+
+/' Nested objects '/
+
+
+
+@enduml

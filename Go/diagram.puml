@@ -1,0 +1,232 @@
+@startuml
+namespace classes {
+    class "ArNode" as ArNode_generic_T <<[T]>> {
+        + Key T
+
+    }
+    class "T" <<type parameter>> {
+        constraints: any
+    }
+    class "DoubleList" as DoubleList_generic_T <<[T]>> {
+        + Head *Node
+        + Tail *Node
+
+        + LCreate(keyBegin T) error
+        + LPushHead(key T) 
+        + LPushBack(key T) 
+        + LDelHead() error
+        + LDelBack() error
+        + LGetByValue(key T) *Node
+        + LPushBefore(targetKey T, newKey T) error
+        + LPushAfter(targetKey T, newKey T) error
+        + LDelAfter(targetKey T) error
+        + LDelBefore(targetKey T) error
+        + LDelByValue(key T) error
+        + Clone() *DoubleList
+        + Print(w io.Writer, choice int) error
+        + LSave(filename string) error
+        + LLoad(filename string) error
+        + LSaveBin(filename string) error
+        + LLoadBin(filename string) error
+
+    }
+    class "FLNode" as FLNode_generic_T <<[T]>> {
+        + Key T
+        + Next *FLNode
+
+    }
+    class "ForwardList" as ForwardList_generic_T <<[T]>> {
+        + Head *FLNode
+
+        + DeepCopy() *ForwardList
+        + PushForward(ptr *FLNode, key T) error
+        + Create(keyBegin T) 
+        + Print() 
+        + GetPrintString() string
+        + PushHead(key T) 
+        + PushBack(key T) 
+        + PushBefore(targetKey T, newKey T) error
+        + DelHead() error
+        + DelBack() error
+        + DelAfter(ptr *FLNode) error
+        + DelBefore(targetKey T) error
+        + DelByValue(key T) error
+        + GetByValue(key T) *FLNode
+        + Save(filename string) error
+        + Load(filename string) error
+        + Serialize(filename string) error
+        + Deserialize(filename string) error
+
+    }
+    class "FullBinaryTree" as FullBinaryTree_generic_T <<[T]>> {
+        - root *TreeNode
+
+        - printBreadthFirst(w io.Writer) 
+        - preOrderRecursive(node *TreeNode, w io.Writer) 
+        - inOrderRecursive(node *TreeNode, w io.Writer) 
+        - postOrderRecursive(node *TreeNode, w io.Writer) 
+        - printTreeVisual(node *TreeNode, w io.Writer) 
+
+        + GetRoot() *TreeNode
+        + Insert(value T) 
+        + IsFull() bool
+        + Clone() *FullBinaryTree
+        + Print(choice int, w io.Writer) error
+        + SaveText(filename string) error
+        + LoadText(filename string) error
+        + SaveBinary(filename string) error
+        + LoadBinary(filename string) error
+
+    }
+    class "MyArray" as MyArray_generic_T <<[T]>> {
+        - data []ArNode
+        - size int
+        - capacity int
+
+        - resize() 
+
+        + Get(index int) (T, error)
+        + Set(index int, value T) error
+        + MPUSHBack(key T) 
+        + MPUSHIndex(index int, key T) error
+        + MGET(index int) (T, error)
+        + MDEL(index int) error
+        + MSWAP(index int, swapkey T) error
+        + Print() 
+        + MSize() int
+        + SaveText(filename string) error
+        + LoadText(filename string) error
+        + SaveBinary(filename string) error
+        + LoadBinary(filename string) error
+
+    }
+    class "MyQueue" as MyQueue_generic_T <<[T]>> {
+        - data []T
+        - head int
+        - tail int
+        - count int
+        - capacity int
+
+        - resize() 
+
+        + Push(value T) 
+        + Pop() (T, error)
+        + Get() (T, error)
+        + IsEmpty() bool
+        + Size() int
+        + Clone() *MyQueue
+        + Print(w io.Writer) 
+        + SaveText(filename string) error
+        + LoadText(filename string) error
+        + SaveBinary(filename string) error
+        + LoadBinary(filename string) error
+
+    }
+    class "MyStack" as MyStack_generic_T <<[T]>> {
+        - data []T
+
+        + Push(value T) 
+        + Pop() (T, error)
+        + Size() int
+        + Print() 
+        + Clone() *MyStack
+        + SaveText(filename string) error
+        + LoadText(filename string) error
+        + SaveBinary(filename string) error
+        + LoadBinary(filename string) error
+
+    }
+    class "Node" as Node_generic_T <<[T]>> {
+        + Key T
+        + Next *Node
+        + Prev *Node
+
+    }
+    class "OTNode" as OTNode_generic_Key_Value <<[Key, Value]>> {
+        - key Key
+        - value Value
+
+    }
+    class "Key" <<type parameter>> {
+        constraints: comparable
+    }
+    class "Value" <<type parameter>> {
+        constraints: any
+    }
+    class "OpenTable" as OpenTable_generic_Key_Value <<[Key, Value]>> {
+        - buckets []OTNode
+        - countItems int
+        - bucketsThersSmtng int
+
+        - hashInt(key int) int
+        - hashString(key string) int
+        - hash(key Key) int
+        - getBucketIndex(key Key) int
+        - rehash() 
+
+        + Find(key Key) bool
+        + Insert(key Key, val Value) 
+        + Erase(key Key) 
+        + Size() int
+        + Empty() bool
+        + GetCap() int
+        + GetKey(i int) Key
+        + GetValue(k Key) Value
+        + SPRINT() 
+        + SaveText(filename string) error
+        + LoadText(filename string) error
+        + SaveBinary(filename string) error
+        + LoadBinary(filename string) error
+
+    }
+    class "TableHash" << (S,Aquamarine) >> {
+        - buckets []*ForwardList
+        - countItems int
+        - bucketsThereSmtng int
+        - loadFactor float64
+
+        - hashString(key string) int
+        - bucketIndex(key string) int
+        - findInBucket(bucket *ForwardList, key string) (string, bool)
+        - deleteFromBucket(bucket *ForwardList, key string) bool
+        - rehash() 
+
+        + Clear() 
+        + Size() int
+        + Empty() bool
+        + Contains(key string) bool
+        + Add(key string, value string) 
+        + Get(key string) (string, bool)
+        + Delete(key string) 
+        + Print() 
+        + SaveText(filename string) error
+        + LoadText(filename string) error
+        + SaveBinary(filename string) error
+        + LoadBinary(filename string) error
+
+    }
+    class "TreeNode" as TreeNode_generic_T <<[T]>> {
+        + Key T
+        + Left *TreeNode
+        + Right *TreeNode
+
+    }
+}
+
+
+"T" <-- "param" "ArNode_generic_T"
+"T" <-- "param" "DoubleList_generic_T"
+"T" <-- "param" "FLNode_generic_T"
+"T" <-- "param" "ForwardList_generic_T"
+"T" <-- "param" "FullBinaryTree_generic_T"
+"T" <-- "param" "MyArray_generic_T"
+"T" <-- "param" "MyQueue_generic_T"
+"T" <-- "param" "MyStack_generic_T"
+"T" <-- "param" "Node_generic_T"
+"Key" <-- "param" "OTNode_generic_Key_Value"
+"Value" <-- "param" "OTNode_generic_Key_Value"
+"Key" <-- "param" "OpenTable_generic_Key_Value"
+"Value" <-- "param" "OpenTable_generic_Key_Value"
+"T" <-- "param" "TreeNode_generic_T"
+
+@enduml
